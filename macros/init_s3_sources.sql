@@ -1,21 +1,23 @@
 {% macro init_s3_sources() -%}
 
-    {% set sql %}
-
+    {% set src_customer = """
         CREATE TABLE src_customer
-        (
-                C_CUSTKEY       UInt32,
-                C_NAME          String,
-                C_ADDRESS       String,
-                C_CITY          LowCardinality(String),
-                C_NATION        LowCardinality(String),
-                C_REGION        LowCardinality(String),
-                C_PHONE         String,
-                C_MKTSEGMENT    LowCardinality(String)
-        )
-        ENGINE = S3('https://storage.yandexcloud.net/otus-dwh/dbgen/customer.tbl', 'CSV')
-        ;
+                (
+                        C_CUSTKEY       UInt32,
+                        C_NAME          String,
+                        C_ADDRESS       String,
+                        C_CITY          LowCardinality(String),
+                        C_NATION        LowCardinality(String),
+                        C_REGION        LowCardinality(String),
+                        C_PHONE         String,
+                        C_MKTSEGMENT    LowCardinality(String)
+                )
+                ENGINE = S3('https://storage.yandexcloud.net/otus-dwh/dbgen/customer.tbl', 'CSV')
+                ;
+        """
+    %}
 
+    {% set src_lineorder = """
         CREATE TABLE src_lineorder
         (
             LO_ORDERKEY             UInt32,
@@ -38,7 +40,10 @@
         )
         ENGINE = S3('https://storage.yandexcloud.net/otus-dwh/dbgen/lineorder.tbl', 'CSV')
         ;
+        """
+    %}
 
+    {% set src_part = """
         CREATE TABLE src_part
         (
                 P_PARTKEY       UInt32,
@@ -53,7 +58,10 @@
         )
         ENGINE = S3('https://storage.yandexcloud.net/otus-dwh/dbgen/part.tbl', 'CSV')
         ;
+        """
+    %}
 
+    {% set src_supplier = """
         CREATE TABLE src_supplier
         (
                 S_SUPPKEY       UInt32,
@@ -66,10 +74,15 @@
         )
         ENGINE = S3('https://storage.yandexcloud.net/otus-dwh/dbgen/supplier.tbl', 'CSV')
         ;
+        """
+    %}
 
-    {% endset %}
-    
-    {% set table = run_query(sql) %}
+    {% set queries = [src_customer, src_lineorder, src_part, src_supplier] %}
+
+    {% for query in queries -%}
+        {% set table = run_query(query) %}
+    {% endfor -%}
+
 
 
 {%- endmacro %}
